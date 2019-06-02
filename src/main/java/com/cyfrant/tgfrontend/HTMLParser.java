@@ -103,6 +103,14 @@ public class HTMLParser {
         remoteResources().forEach(r -> {
             String currentUrl = null;
             MappedURL mapped = null;
+            if (r.tagName().equals("script")) {
+                if (StringUtils.isEmpty(r.attr("language"))) {
+                    r.attr("language", "JavaScript");
+                }
+                if (StringUtils.isEmpty(r.attr("type"))) {
+                    r.attr("type", "text/javascript");
+                }
+            }
             try {
                 if (!StringUtils.isEmpty(r.attr("href"))) {
                     String target = normalizeUrl(r.attr("href"));

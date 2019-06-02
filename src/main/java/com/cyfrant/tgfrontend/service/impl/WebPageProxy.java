@@ -25,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class WebPageProxy implements PageProxyService {
     private final URL index;
     private final Map<String, MappedURL> resources;
-    private final HTMLParser parser;
+    private HTMLParser parser;
     private final String frontendURL;
     private final List<String> domains;
     private final InetSocketAddress proxyAddress;
@@ -44,10 +44,12 @@ public class WebPageProxy implements PageProxyService {
 
     @Override
     public InputStream getContextURL(String relativeURL) throws IOException {
-        if (relativeURL.equals("/")) {
-            return refreshDocument();
+        if (relativeURL.equals("/") /*|| relativeURL.startsWith("/?") || relativeURL.startsWith("?")*/) {
+            log.info("MAIN: " + relativeURL);
+            return refreshDocument(relativeURL);
         }
         if (resources.get(relativeURL) != null) {
+            log.info("RES: " + relativeURL);
             return loadMappedUrl(resources.get(relativeURL));
         }
         throw new RuntimeException("Cannot process " + relativeURL);
@@ -55,6 +57,7 @@ public class WebPageProxy implements PageProxyService {
 
     private InputStream loadMappedUrl(MappedURL mappedURL) throws IOException {
         URL address = new URL(mappedURL.getTargetAddress());
+        log.info(" <- {}", mappedURL);
         HttpURLConnection connection = (HttpURLConnection) address.openConnection(
                 proxyAddress == null ? Proxy.NO_PROXY : new Proxy(Proxy.Type.SOCKS, proxyAddress)
         );
@@ -78,7 +81,8 @@ public class WebPageProxy implements PageProxyService {
         out.flush();
     }
 
-    private synchronized InputStream refreshDocument() throws IOException {
+    private synchronized InputStream refreshDocument(String relativeUrl) throws IOException {
+        //parser = new HTMLParser(new URL(index, relativeUrl), proxyAddress);
         Document document = parser.parse();
         List<MappedURL> mapped = parser.mapResources(new URL(frontendURL), domains);
         resources.clear();
