@@ -106,6 +106,17 @@ public class HTMLParser {
         return false;
     }
 
+    private String replaceToProxy(String link, URL frontendBase) {
+        String base = url.toString();
+        if (base.endsWith("/")) {
+            base = base.substring(0, base.length() - 1);
+        }
+        if (link.startsWith(base)) {
+            link = link.replace(base, frontendBase.toString());
+        }
+        return link;
+    }
+
     public void bundleResources(URL frontendBase) {
         remoteResources().forEach(r -> {
             if ("script".equalsIgnoreCase(r.tagName())) {
@@ -126,9 +137,7 @@ public class HTMLParser {
             if ("a".equalsIgnoreCase(r.tagName())) {
                 String link = r.attr("href");
                 link = normalizeUrl(link);
-                if (link.startsWith(url.toString())) {
-                    link = link.replace(url.toString(), frontendBase.toString());
-                }
+                link = replaceToProxy(link, frontendBase);
                 r.attr("href", link);
             }
         });
