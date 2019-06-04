@@ -10,7 +10,6 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.util.StringUtils;
 
 import java.net.InetSocketAddress;
-import java.util.List;
 
 @Configuration
 @PropertySource("application.properties")
@@ -24,15 +23,12 @@ public class Config {
 
     @Value("${proxy.address:}")
     private String proxyAddress;
-
-    @Value("#{'${target.domains:https://t.me|https://telegram.org|https://core.telegram.org}'.split('\\|')}")
-    private List<String> domains;
     private PageProxyService pageProxyService;
 
     @Bean
     public PageProxyService pageProxyService() throws Exception {
         if (pageProxyService == null) {
-            pageProxyService = new WebPageProxy(startPage, frontendUrl, domains, proxyAddress());
+            pageProxyService = new WebPageProxy(startPage, frontendUrl, proxyAddress());
         }
         return pageProxyService;
     }

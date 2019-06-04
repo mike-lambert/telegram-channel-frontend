@@ -1,12 +1,10 @@
 package com.cyfrant.tgfrontend;
 
 import com.cyfrant.tgfrontend.model.BundledContent;
-import com.cyfrant.tgfrontend.model.MappedURL;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -15,7 +13,6 @@ import java.net.Proxy;
 import java.net.URL;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class HTMLParser {
@@ -60,16 +57,6 @@ public class HTMLParser {
         return address;
     }
 
-    private boolean isRootResource(String address) {
-        String prefix = getMainURL(url) + "?";
-        return address.startsWith(prefix);
-    }
-
-    private boolean isSubResource(String address) {
-        String prefix = url.toString() + "/";
-        return address.startsWith(prefix) && address.length() > prefix.length();
-    }
-
     private String getBaseURL(URL address) {
         StringBuffer result = new StringBuffer();
         result.append(address.getProtocol())
@@ -94,16 +81,6 @@ public class HTMLParser {
             return false;
         }
         return true;
-    }
-
-    private boolean needProxying(String address, List<String> proxied) throws MalformedURLException {
-        String base = getBaseURL(new URL(address));
-        for (String domain : proxied) {
-            if (domain.equals(base)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private String replaceToProxy(String link, URL frontendBase) {
@@ -153,78 +130,6 @@ public class HTMLParser {
         } catch (Exception e) {
             log.warn("{}.{}: ", node.tagName(), attribute, e);
         }
-    }
-
-    public List<MappedURL> mapResources(URL frontendBase, List<String> proxiedDomains) {
-        final List<MappedURL> result = new CopyOnWriteArrayList<>();
-        remoteResources().forEach(r -> {
-            String currentUrl = null;
-            MappedURL mapped = null;
-            if (r.tagName().equals("script")) {
-                if (StringUtils.isEmpty(r.attr("language"))) {
-                    r.attr("language", "JavaScript");
-                }
-                if (StringUtils.isEmpty(r.attr("type"))) {
-                    r.attr("type", "text/javascript");
-                }
-            }
-            try {
-                if (!StringUtils.isEmpty(r.attr("href"))) {
-                    String target = normalizeUrl(r.attr("href"));
-                    currentUrl = target;
-                    if (isRelative(target)) {
-                        target = new URL(url, target).toString();
-                    } else {
-                        if (!needProxying(target, proxiedDomains)) {
-                            target = null;
-                        }
-                    }
-                    if (target != null) {
-                        if (isRootResource(target)) {
-                            String query = new URL(target).getQuery();
-                            mapped = new MappedURL(frontendBase + "?" + query, url.toString() + "?" + query);
-                        } else if (isSubResource(target)) {
-                            String path = new URL(target).getPath();
-                            mapped = new MappedURL(frontendBase + "/" + path, url.toString() + "/" + path);
-                        } else {
-                            mapped = MappedURL.hashUrl(frontendBase, target);
-                        }
-                        r.attr("href", mapped.getFrontendAddress());
-                    }
-                } else if (!StringUtils.isEmpty(r.attr("src"))) {
-                    String target = normalizeUrl(r.attr("src"));
-                    currentUrl = target;
-                    if (isRelative(target)) {
-                        target = new URL(url, target).toString();
-                    } else {
-                        if (!needProxying(target, proxiedDomains)) {
-                            target = null;
-                        }
-                    }
-                    if (target != null) {
-                        if (isRootResource(target)) {
-                            String query = new URL(target).getQuery();
-                            mapped = new MappedURL(frontendBase + "?" + query, url.toString() + "?" + query);
-                        } else if (isSubResource(target)) {
-                            String path = new URL(target).getPath();
-                            mapped = new MappedURL(frontendBase + "/" + path, url.toString() + "/" + path);
-                        } else {
-                            mapped = MappedURL.hashUrl(frontendBase, target);
-                        }
-                        r.attr("src", mapped.getFrontendAddress());
-                    }
-                }
-
-                if (mapped != null) {
-                    result.add(mapped);
-                }
-            } catch (Exception e) {
-                log.warn("Cannot map {}", currentUrl);
-            }
-        });
-        return result.stream()
-                .distinct()
-                .collect(Collectors.toList());
     }
 
     /*

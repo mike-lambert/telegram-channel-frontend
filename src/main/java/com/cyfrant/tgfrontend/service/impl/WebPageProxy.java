@@ -10,21 +10,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.URL;
-import java.util.List;
 
 @Slf4j
 public class WebPageProxy implements PageProxyService {
     private final URL index;
     private final String frontendURL;
-    private final List<String> domains;
     private final InetSocketAddress proxyAddress;
 
     public WebPageProxy(String startPage,
                         String frontendURL,
-                        List<String> domains,
                         InetSocketAddress proxyAddress) throws Exception {
         this.frontendURL = frontendURL;
-        this.domains = domains;
         this.proxyAddress = proxyAddress;
         index = new URL(startPage);
     }
