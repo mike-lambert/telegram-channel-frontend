@@ -84,7 +84,7 @@ public class HTMLParser {
     }
 
     private String replaceToProxy(String link, URL frontendBase) {
-        String base = url.toString();
+        String base = getMainURL(url);
         if (base.endsWith("/")) {
             base = base.substring(0, base.length() - 1);
         }
@@ -95,7 +95,7 @@ public class HTMLParser {
     }
 
     public void bundleResources(URL frontendBase) {
-        remoteResources().forEach(r -> {
+        remoteResources().parallelStream().forEach(r -> {
             if ("script".equalsIgnoreCase(r.tagName())) {
                 String defaultContentType = "application/javascript";
                 embedDataURI(r, "src", defaultContentType);

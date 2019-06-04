@@ -34,7 +34,7 @@ public class WebUtils {
 
     public static InputStream get(String url, InetSocketAddress proxyAddress, BundledContent metadata) throws IOException {
         URL address = new URL(url);
-        log.info(" <- {}", url);
+        log.debug(" <- {}", url);
         HttpURLConnection connection = (HttpURLConnection) address.openConnection(
                 proxyAddress == null ? Proxy.NO_PROXY : new Proxy(Proxy.Type.SOCKS, proxyAddress)
         );
