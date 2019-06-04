@@ -35,9 +35,10 @@ public class WebPageProxy implements PageProxyService {
     }
 
     private InputStream refreshDocument(String relativeUrl) throws IOException {
-        HTMLParser parser = new HTMLParser(new URL(index, relativeUrl), proxyAddress);
+        URL url = new URL(index.toString() + relativeUrl);
+        HTMLParser parser = new HTMLParser(url, proxyAddress);
         Document document = parser.parse();
-        parser.bundleResources();
+        parser.bundleResources(new URL(frontendURL));
         return new ByteArrayInputStream(document.toString().getBytes("UTF-8"));
     }
 }

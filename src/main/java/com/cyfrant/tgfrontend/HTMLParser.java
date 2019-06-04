@@ -1,5 +1,6 @@
 package com.cyfrant.tgfrontend;
 
+import com.cyfrant.tgfrontend.model.BundledContent;
 import com.cyfrant.tgfrontend.model.MappedURL;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
@@ -31,7 +32,7 @@ public class HTMLParser {
         document = Jsoup.connect(url.toString())
                 .proxy(proxyAddress == null ? Proxy.NO_PROXY : new Proxy(Proxy.Type.SOCKS, proxyAddress))
                 .get();
-        //System.out.println(document.outerHtml());
+        log.debug("{} ->\n{}", url, document);
         return document;
     }
 
@@ -51,13 +52,16 @@ public class HTMLParser {
             return "https:" + address;
         }
         if (address.startsWith("?")) {
-            return this.url.toString() + address;
+            return getMainURL(url) + address;
+        }
+        if (address.startsWith("/")) {
+            return getBaseURL(url) + address;
         }
         return address;
     }
 
     private boolean isRootResource(String address) {
-        String prefix = url.toString() + "?";
+        String prefix = getMainURL(url) + "?";
         return address.startsWith(prefix);
     }
 
@@ -75,6 +79,10 @@ public class HTMLParser {
             result.append(':').append(address.getPort());
         }
         return result.toString();
+    }
+
+    private String getMainURL(URL address) {
+        return getBaseURL(address) + address.getPath();
     }
 
     private boolean isSameDomain(String url1, String url2) throws MalformedURLException {
@@ -98,11 +106,44 @@ public class HTMLParser {
         return false;
     }
 
-    public void bundleResources() {
-        // TODO: bundle;
+    public void bundleResources(URL frontendBase) {
         remoteResources().forEach(r -> {
+            if ("script".equalsIgnoreCase(r.tagName())) {
+                String defaultContentType = "application/javascript";
+                embedDataURI(r, "src", defaultContentType);
+            }
 
+            if ("img".equalsIgnoreCase(r.tagName())) {
+                String defaultContentType = "image/png";
+                embedDataURI(r, "src", defaultContentType);
+            }
+
+            if ("link".equalsIgnoreCase(r.tagName()) && "stylesheet".equalsIgnoreCase(r.attr("rel"))) {
+                String defaultContentType = "text/css";
+                embedDataURI(r, "href", defaultContentType);
+            }
+
+            if ("a".equalsIgnoreCase(r.tagName())) {
+                String link = r.attr("href");
+                link = normalizeUrl(link);
+                if (link.startsWith(url.toString())) {
+                    link = link.replace(url.toString(), frontendBase.toString());
+                }
+                r.attr("href", link);
+            }
         });
+    }
+
+    private void embedDataURI(Element node, String attribute, String defaultContentType) {
+        try {
+            String link = node.attr(attribute);
+            link = normalizeUrl(link);
+            String embed = BundledContent.dataUri(link, proxyAddress, defaultContentType);
+            node.attr(attribute, embed);
+            log.debug("{}.{} : {} -> {}", node.tagName(), attribute, link, embed);
+        } catch (Exception e) {
+            log.warn("{}.{}: ", node.tagName(), attribute, e);
+        }
     }
 
     public List<MappedURL> mapResources(URL frontendBase, List<String> proxiedDomains) {
