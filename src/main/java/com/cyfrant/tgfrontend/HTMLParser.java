@@ -98,6 +98,13 @@ public class HTMLParser {
         return false;
     }
 
+    public void bundleResources() {
+        // TODO: bundle;
+        remoteResources().forEach(r -> {
+
+        });
+    }
+
     public List<MappedURL> mapResources(URL frontendBase, List<String> proxiedDomains) {
         final List<MappedURL> result = new CopyOnWriteArrayList<>();
         remoteResources().forEach(r -> {

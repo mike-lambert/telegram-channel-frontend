@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.util.StreamUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.servlet.http.HttpServletRequest;
@@ -21,9 +22,14 @@ public class EntrypointController {
     private PageProxyService proxyService;
 
     @GetMapping
-    public void process(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void get(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String path = request.getRequestURI() + (StringUtils.isEmpty(request.getQueryString()) ? "" : "?" + request.getQueryString());
         log.info(" -> {}", path);
         StreamUtils.copy(proxyService.getContextURL(path), response.getOutputStream());
+    }
+
+    @PostMapping
+    public void post(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        // TODO: implement
     }
 }
