@@ -1,6 +1,8 @@
 package com.cyfrant.tgfrontend.config;
 
+import com.cyfrant.tgfrontend.service.DataUriService;
 import com.cyfrant.tgfrontend.service.PageProxyService;
+import com.cyfrant.tgfrontend.service.impl.DataUriServiceImpl;
 import com.cyfrant.tgfrontend.service.impl.WebPageProxy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,13 +28,22 @@ public class Config {
     @Value("${proxy.address:}")
     private String proxyAddress;
     private PageProxyService pageProxyService;
+    private DataUriService dataUriService;
 
     @Bean
     public PageProxyService pageProxyService() throws Exception {
         if (pageProxyService == null) {
-            pageProxyService = new WebPageProxy(startPage, frontendUrl, proxyAddress());
+            pageProxyService = new WebPageProxy(startPage, frontendUrl, dataUriService(), proxyAddress());
         }
         return pageProxyService;
+    }
+
+    @Bean
+    public DataUriService dataUriService() {
+        if (dataUriService == null) {
+            dataUriService = new DataUriServiceImpl(proxyAddress());
+        }
+        return dataUriService;
     }
 
     private InetSocketAddress proxyAddress() {
