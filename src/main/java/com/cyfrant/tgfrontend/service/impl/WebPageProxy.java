@@ -1,6 +1,6 @@
 package com.cyfrant.tgfrontend.service.impl;
 
-import com.cyfrant.tgfrontend.HTMLParser;
+import com.cyfrant.tgfrontend.service.DataUriService;
 import com.cyfrant.tgfrontend.service.PageProxyService;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Document;
@@ -16,12 +16,15 @@ public class WebPageProxy implements PageProxyService {
     private final URL index;
     private final String frontendURL;
     private final InetSocketAddress proxyAddress;
+    private final DataUriService dataUriService;
 
     public WebPageProxy(String startPage,
                         String frontendURL,
+                        DataUriService uriService,
                         InetSocketAddress proxyAddress) throws Exception {
         this.frontendURL = frontendURL;
         this.proxyAddress = proxyAddress;
+        this.dataUriService = uriService;
         index = new URL(startPage);
     }
 
@@ -32,7 +35,7 @@ public class WebPageProxy implements PageProxyService {
 
     private InputStream refreshDocument(String relativeUrl) throws IOException {
         URL url = new URL(index.toString() + relativeUrl);
-        HTMLParser parser = new HTMLParser(url, proxyAddress);
+        PageService parser = new PageService(url, dataUriService, proxyAddress);
         Document document = parser.parse();
         parser.bundleResources(new URL(frontendURL));
         return new ByteArrayInputStream(document.toString().getBytes("UTF-8"));

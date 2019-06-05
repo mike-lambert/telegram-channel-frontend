@@ -1,6 +1,6 @@
-package com.cyfrant.tgfrontend;
+package com.cyfrant.tgfrontend.service.impl;
 
-import com.cyfrant.tgfrontend.model.BundledContent;
+import com.cyfrant.tgfrontend.service.DataUriService;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -15,14 +15,16 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 @Slf4j
-public class HTMLParser {
+public class PageService {
     private Document document;
     private final URL url;
     private final InetSocketAddress proxyAddress;
+    private final DataUriService dataUriService;
 
-    public HTMLParser(URL url, InetSocketAddress proxy) {
+    public PageService(URL url, DataUriService dataUriService, InetSocketAddress proxy) {
         this.url = url;
         this.proxyAddress = proxy;
+        this.dataUriService = dataUriService;
     }
 
     public Document parse() throws IOException {
@@ -124,7 +126,8 @@ public class HTMLParser {
         try {
             String link = node.attr(attribute);
             link = normalizeUrl(link);
-            String embed = BundledContent.dataUri(link, proxyAddress, defaultContentType);
+            // TODO: download service
+            String embed = dataUriService.dataURI(link, defaultContentType);
             node.attr(attribute, embed);
             log.debug("{}.{} : {} -> {}", node.tagName(), attribute, link, embed);
         } catch (Exception e) {
