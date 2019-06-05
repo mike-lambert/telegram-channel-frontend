@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.springframework.cache.annotation.Cacheable;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -120,11 +121,18 @@ public class HTMLParser {
         });
     }
 
+    @Cacheable(value = "data-uri", key = "#url")
+    public String dataUri(String url, String contentType) throws IOException {
+        log.info("Caching {}", url);
+        return BundledContent.dataUri(url, proxyAddress, contentType);
+    }
+
     private void embedDataURI(Element node, String attribute, String defaultContentType) {
         try {
             String link = node.attr(attribute);
             link = normalizeUrl(link);
-            String embed = BundledContent.dataUri(link, proxyAddress, defaultContentType);
+            // TODO: download service
+            String embed = dataUri(link, defaultContentType);
             node.attr(attribute, embed);
             log.debug("{}.{} : {} -> {}", node.tagName(), attribute, link, embed);
         } catch (Exception e) {
