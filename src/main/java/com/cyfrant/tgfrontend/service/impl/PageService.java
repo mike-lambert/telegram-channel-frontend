@@ -1,10 +1,12 @@
 package com.cyfrant.tgfrontend.service.impl;
 
+import com.cyfrant.tgfrontend.model.BundledContent;
 import com.cyfrant.tgfrontend.service.DataUriService;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -42,7 +44,7 @@ public class PageService {
         result.addAll(document.select("a[href]"));
         result.addAll(document.select("img[src]"));
         result.addAll(document.select("script[src]"));
-        result.addAll(document.select("video[src]"));
+        result.addAll(document.select("i[style]"));
         return result;
     }
 
@@ -96,6 +98,34 @@ public class PageService {
         return link;
     }
 
+    private void bundleBackground(Element node, String styleAttribute) {
+        /*
+         * style="background-image:url('https://cdn4.telesco.pe/file/W8LSPa3TeoinlbruKz1gKS96FZNOEnZGfYqNcuXoPqh3MmTOjvXD_i6cQkjStK1T9cKs5d59Ev-HxN5Yc6rrqfYiAUVj8o5cznVFAOuALvlBZCflQpGA8lxILoOKAiJiiB-MK0LzAH2IGBNiFICfXLp6ldqvm9YKBcB-_147ZgqmZ_f5KwV4z7VLGpbXO0mcxp-_A_xRHMZo5NlYaWQjKiQ_nOgw6x039wTr4AIrOT1kTnX4e-LChb-qENnIhmSybIXBcnLtqhyxB8ltEmS9FdOj_hnN7-wroCQu4Ao1fliPoXxt68tKZIw58vDSKv-wQHDx0PTT-N5wdIt4FGxiQw.jpg')"*/
+        final String startExpression = "background-image:url(";
+        final String endExpression = ")";
+        String style = node.attr(styleAttribute);
+        final int backgroundStart = style.indexOf(startExpression);
+        if (backgroundStart >= 0) {
+            final int delta1 = backgroundStart + startExpression.length();
+            final int backgroundEnd = style.indexOf(endExpression, delta1);
+            if (backgroundEnd > delta1) {
+                String url = style.substring(delta1 + 1, backgroundEnd - 1);
+                if (url.startsWith("//")) {
+                    url = "https:" + url;
+                }
+                String start = style.substring(0, delta1);
+                String tail = style.substring(backgroundEnd);
+                try {
+                    String data = BundledContent.dataUri(url, proxyAddress, "image/png");
+                    style = start + "'" + data + "'" + tail;
+                    node.attr(styleAttribute, style);
+                } catch (IOException e) {
+                    log.warn("Unable to get " + url, e);
+                }
+            }
+        }
+    }
+
     public void bundleResources(URL frontendBase) {
         remoteResources().parallelStream().forEach(r -> {
             if ("script".equalsIgnoreCase(r.tagName())) {
@@ -118,6 +148,18 @@ public class PageService {
                 link = normalizeUrl(link);
                 link = replaceToProxy(link, frontendBase);
                 r.attr("href", link);
+
+                String style = r.attr("style");
+                if (!StringUtils.isEmpty(style)) {
+                    bundleBackground(r, "style");
+                }
+            }
+
+            if ("i".equalsIgnoreCase(r.tagName())) {
+                String style = r.attr("style");
+                if (!StringUtils.isEmpty(style)) {
+                    bundleBackground(r, "style");
+                }
             }
         });
     }
