@@ -125,8 +125,11 @@ public class PageService {
     private void embedDataURI(Element node, String attribute, String defaultContentType) {
         try {
             String link = node.attr(attribute);
-            link = normalizeUrl(link);
-            // TODO: download service
+            if (link.startsWith("/img/tgme/")) {
+                link = "https://telegram.org" + link;
+            } else {
+                link = normalizeUrl(link);
+            }
             String embed = dataUriService.dataURI(link, defaultContentType);
             node.attr(attribute, embed);
             log.debug("{}.{} : {} -> {}", node.tagName(), attribute, link, embed);

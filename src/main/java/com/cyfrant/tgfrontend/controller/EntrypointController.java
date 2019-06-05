@@ -24,12 +24,14 @@ public class EntrypointController {
     @GetMapping
     public void get(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String path = request.getRequestURI() + (StringUtils.isEmpty(request.getQueryString()) ? "" : "?" + request.getQueryString());
-        log.info(" -> {}", path);
-        StreamUtils.copy(proxyService.getContextURL(path), response.getOutputStream());
+        log.info("GET -> {}", path);
+        StreamUtils.copy(proxyService.get(path), response.getOutputStream());
     }
 
     @PostMapping
     public void post(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        // TODO: implement
+        String path = request.getRequestURI() + (StringUtils.isEmpty(request.getQueryString()) ? "" : "?" + request.getQueryString());
+        log.info("POST -> {}", path);
+        StreamUtils.copy(proxyService.post(request), response.getOutputStream());
     }
 }

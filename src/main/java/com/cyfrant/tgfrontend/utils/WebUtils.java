@@ -15,6 +15,8 @@ import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URL;
+import java.net.URLConnection;
+import java.util.Map;
 
 @Slf4j
 public class WebUtils {
@@ -68,5 +70,42 @@ public class WebUtils {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         StreamUtils.copy(in, out);
         return Base64Utils.encodeToString(out.toByteArray());
+    }
+
+    public static String readStreamToString(InputStream in) throws IOException {
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        copyStream(in, out);
+        final byte[] data = out.toByteArray();
+        return new String(data, "UTF-8");
+    }
+
+    public static InputStream post(String url, InputStream body, Map<String, String> headers, InetSocketAddress proxy) throws IOException {
+        HttpURLConnection uc = null;
+        try {
+            uc = (HttpURLConnection) new URL(url).openConnection(
+                    proxy == null ? Proxy.NO_PROXY : new Proxy(Proxy.Type.SOCKS, proxy)
+            );
+            uc.setAllowUserInteraction(false);
+            URLConnection.setDefaultAllowUserInteraction(false);
+            uc.setRequestMethod("POST");
+            for(Map.Entry<String, String> e : headers.entrySet()) {
+                uc.setRequestProperty(e.getKey(), e.getValue());
+            }
+            uc.setDoOutput(true);
+            uc.setDoInput(true);
+            uc.connect();
+            copyStream(body, uc.getOutputStream());
+            InputStream is = uc.getInputStream();
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            copyStream(is, buffer);
+            return new ByteArrayInputStream(buffer.toByteArray());
+        } catch (Exception e) {
+            log.warn("POST failed", e);
+            throw e;
+        } finally {
+            if (uc != null) {
+                uc.disconnect();
+            }
+        }
     }
 }
