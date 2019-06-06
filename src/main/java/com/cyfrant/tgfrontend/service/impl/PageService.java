@@ -1,7 +1,13 @@
 package com.cyfrant.tgfrontend.service.impl;
 
 import com.cyfrant.tgfrontend.model.BundledContent;
+import com.cyfrant.tgfrontend.model.css.URLCSSVisitor;
 import com.cyfrant.tgfrontend.service.DataUriService;
+import com.helger.css.ECSSVersion;
+import com.helger.css.decl.CascadingStyleSheet;
+import com.helger.css.decl.visit.CSSVisitor;
+import com.helger.css.reader.CSSReader;
+import com.helger.css.writer.CSSWriter;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -127,32 +133,13 @@ public class PageService {
         }
     }
 
-    private String bundleCssBackground(String style) {
-        final String startExpression = "background-image:url(";
-        final String endExpression = ")";
-        final int backgroundStart = style.indexOf(startExpression);
-        if (backgroundStart >= 0) {
-            final int delta1 = backgroundStart + startExpression.length();
-            final int backgroundEnd = style.indexOf(endExpression, delta1);
-            if (backgroundEnd > delta1) {
-                String url = style.substring(delta1 + 1, backgroundEnd - 1);
-                if (url.startsWith("/img/tgme/")) {
-                    url = "https://telegram.org" + url;
-                }
-                if (url.startsWith("//")) {
-                    url = "https:" + url;
-                }
-                String start = style.substring(0, delta1);
-                String tail = style.substring(backgroundEnd);
-                try {
-                    String data = BundledContent.dataUri(url, proxyAddress, "image/png");
-                    return start + "'" + data + "'" + tail;
-                } catch (IOException e) {
-                    log.warn("Unable to get " + url, e);
-                }
-            }
-        }
-        return style;
+    private String handleCssUrls(String style) {
+        CascadingStyleSheet parsed = CSSReader.readFromString(style, ECSSVersion.CSS30);
+        CSSVisitor.visitCSSUrl(parsed, new URLCSSVisitor(proxyAddress));
+        CSSWriter writer = new CSSWriter();
+        String patched = writer.getCSSAsString(parsed);
+        log.debug(patched);
+        return patched;
     }
 
     public void bundleResources(URL frontendBase) {
@@ -176,7 +163,7 @@ public class PageService {
                         link = "https:" + link;
                     }
                     String css = dataUriService.content(link);
-                    css = bundleCssBackground(css);
+                    css = handleCssUrls(css);
                     String embed = "data:text/css;base64," + Base64Utils.encodeToString(
                             css.getBytes("UTF-8")
                     );
