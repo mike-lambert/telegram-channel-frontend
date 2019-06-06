@@ -39,7 +39,7 @@ public class URLCSSVisitor extends DefaultCSSUrlVisitor {
             }
             try {
                 String data = BundledContent.dataUri(url, proxyAddress, "image/png");
-                log.info("{} -> \n {}", url, data);
+                log.debug("{} -> \n {}", url, data);
                 aURI.setURI(data);
             } catch (IOException e) {
                 log.warn("Unable to get " + url, e);
