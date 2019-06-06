@@ -20,6 +20,10 @@ repositories {
 	mavenCentral()
 }
 
+bootJar {
+	archiveName = "$baseName.$extension"
+}
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.jsoup:jsoup:1.12.1'
