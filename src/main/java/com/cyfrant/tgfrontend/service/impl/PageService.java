@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.springframework.util.Base64Utils;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
@@ -126,6 +127,34 @@ public class PageService {
         }
     }
 
+    private String bundleCssBackground(String style) {
+        final String startExpression = "background-image:url(";
+        final String endExpression = ")";
+        final int backgroundStart = style.indexOf(startExpression);
+        if (backgroundStart >= 0) {
+            final int delta1 = backgroundStart + startExpression.length();
+            final int backgroundEnd = style.indexOf(endExpression, delta1);
+            if (backgroundEnd > delta1) {
+                String url = style.substring(delta1 + 1, backgroundEnd - 1);
+                if (url.startsWith("/img/tgme/")) {
+                    url = "https://telegram.org" + url;
+                }
+                if (url.startsWith("//")) {
+                    url = "https:" + url;
+                }
+                String start = style.substring(0, delta1);
+                String tail = style.substring(backgroundEnd);
+                try {
+                    String data = BundledContent.dataUri(url, proxyAddress, "image/png");
+                    return start + "'" + data + "'" + tail;
+                } catch (IOException e) {
+                    log.warn("Unable to get " + url, e);
+                }
+            }
+        }
+        return style;
+    }
+
     public void bundleResources(URL frontendBase) {
         remoteResources().parallelStream().forEach(r -> {
             if ("script".equalsIgnoreCase(r.tagName())) {
@@ -140,7 +169,19 @@ public class PageService {
 
             if ("link".equalsIgnoreCase(r.tagName()) && "stylesheet".equalsIgnoreCase(r.attr("rel"))) {
                 String defaultContentType = "text/css";
-                embedDataURI(r, "href", defaultContentType);
+                String attribute = "href";
+                try {
+                    String link = r.attr(attribute);
+                    String css = dataUriService.content(link);
+                    css = bundleCssBackground(css);
+                    String embed = "data:text/css;base64," + Base64Utils.encodeToString(
+                            css.getBytes("UTF-8")
+                    );
+                    r.attr(attribute, embed);
+                    log.debug("{}.{} : {} -> {}", r.tagName(), attribute, link, embed);
+                } catch (Exception e) {
+                    log.warn("{}.{}: ", r.tagName(), attribute, e);
+                }
             }
 
             if ("a".equalsIgnoreCase(r.tagName())) {
@@ -163,6 +204,7 @@ public class PageService {
             }
         });
     }
+
 
     private void embedDataURI(Element node, String attribute, String defaultContentType) {
         try {

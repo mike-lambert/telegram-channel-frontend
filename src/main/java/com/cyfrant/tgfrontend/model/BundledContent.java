@@ -23,4 +23,10 @@ public class BundledContent {
         get(url, proxyAddress, metadata);
         return "data:" + metadata.getContentType() + ";base64," + metadata.getBase64();
     }
+
+    public static BundledContent text(String url, InetSocketAddress proxyAddress) throws IOException {
+        BundledContent metadata = new BundledContent();
+        get(url, proxyAddress, metadata);
+        return metadata;
+    }
 }
