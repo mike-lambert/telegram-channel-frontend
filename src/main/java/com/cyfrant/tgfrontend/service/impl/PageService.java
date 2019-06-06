@@ -172,6 +172,9 @@ public class PageService {
                 String attribute = "href";
                 try {
                     String link = r.attr(attribute);
+                    if (link.startsWith("//")) {
+                        link = "https://" + link;
+                    }
                     String css = dataUriService.content(link);
                     css = bundleCssBackground(css);
                     String embed = "data:text/css;base64," + Base64Utils.encodeToString(
