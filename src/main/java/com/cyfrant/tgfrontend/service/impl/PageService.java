@@ -44,6 +44,11 @@ public class PageService {
         return document;
     }
 
+    public void bundle(Document document, URL frontendBase) {
+        this.document = document;
+        bundleResources(frontendBase);
+    }
+
 
     public List<Element> remoteResources() {
         List<Element> result = new CopyOnWriteArrayList<>();
@@ -56,6 +61,12 @@ public class PageService {
     }
 
     private String normalizeUrl(String address) {
+        if (address.startsWith("\"") || address.endsWith("\"")) {
+            return normalizeUrl(address.replaceAll("\"", ""));
+        }
+        if (address.contains("\\")) {
+            return normalizeUrl(address.replaceAll("\\\\", ""));
+        }
         if (address.startsWith("//")) {
             return "https:" + address;
         }
@@ -120,6 +131,7 @@ public class PageService {
                 if (url.startsWith("//")) {
                     url = "https:" + url;
                 }
+                url = normalizeUrl(url);
                 String start = style.substring(0, delta1);
                 String tail = style.substring(backgroundEnd);
                 try {

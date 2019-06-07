@@ -4,9 +4,14 @@ import com.cyfrant.tgfrontend.service.DataUriService;
 import com.cyfrant.tgfrontend.service.PageProxyService;
 import com.cyfrant.tgfrontend.utils.WebUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.util.StringUtils;
 
+import javax.script.ScriptContext;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -52,7 +57,33 @@ public class WebPageProxy implements PageProxyService {
         headers.put("Content-Length", "0");
         headers.put("DNT", "1");
         String normalized = url.toString().replace("/?", "?");
-        return WebUtils.post(normalized, original.getInputStream(), headers, proxyAddress);
+        String html = WebUtils.readStreamToString(WebUtils.post(normalized, original.getInputStream(), headers, proxyAddress));
+        try {
+            html = decodeJSON(html);
+            Document document = Jsoup.parse(html);
+            PageService parser = new PageService(url, dataUriService, proxyAddress);
+            parser.bundle(document, new URL(frontendURL));
+            html = document.body().html();
+            html = encodeJSON(html);
+            log.debug(" <- \n {}", html);
+        } catch (Exception e) {
+            log.warn("Failed to parse {}", html, e);
+        }
+        return new ByteArrayInputStream(html.getBytes("UTF-8"));
+    }
+
+    private String decodeJSON(String in) throws ScriptException {
+        ScriptEngine js = new ScriptEngineManager().getEngineByExtension("js");
+        js.getContext().setAttribute("in", in, ScriptContext.ENGINE_SCOPE);
+        String result = js.eval("JSON.parse(in);").toString();
+        return result;
+    }
+
+    private String encodeJSON(String in) throws ScriptException {
+        ScriptEngine js = new ScriptEngineManager().getEngineByExtension("js");
+        js.getContext().setAttribute("in", in, ScriptContext.ENGINE_SCOPE);
+        String result = js.eval("JSON.stringify(in);").toString();
+        return result;
     }
 
     private InputStream refreshDocument(String relativeUrl) throws IOException {
