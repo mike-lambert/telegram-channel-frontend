@@ -67,22 +67,22 @@ public class WebPageProxy implements PageProxyService {
             html = encodeJSON(html);
             log.debug(" <- \n {}", html);
         } catch (Exception e) {
-            log.warn("Failed to parse {}", html, e);
+            log.warn("Failed to parse {}", normalized, e);
         }
         return new ByteArrayInputStream(html.getBytes("UTF-8"));
     }
 
     private String decodeJSON(String in) throws ScriptException {
         ScriptEngine js = new ScriptEngineManager().getEngineByExtension("js");
-        js.getContext().setAttribute("in", in, ScriptContext.ENGINE_SCOPE);
-        String result = js.eval("JSON.parse(in);").toString();
+        js.getContext().setAttribute("input", in, ScriptContext.GLOBAL_SCOPE);
+        String result = js.eval("JSON.parse(input);").toString();
         return result;
     }
 
     private String encodeJSON(String in) throws ScriptException {
         ScriptEngine js = new ScriptEngineManager().getEngineByExtension("js");
-        js.getContext().setAttribute("in", in, ScriptContext.ENGINE_SCOPE);
-        String result = js.eval("JSON.stringify(in);").toString();
+        js.getContext().setAttribute("input", in, ScriptContext.GLOBAL_SCOPE);
+        String result = js.eval("JSON.stringify(input);").toString();
         return result;
     }
 
