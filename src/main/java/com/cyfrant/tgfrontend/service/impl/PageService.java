@@ -223,25 +223,4 @@ public class PageService {
             log.warn("{}.{}: ", node.tagName(), attribute, e);
         }
     }
-
-    /*
-    public static void main(String[] args) {
-        try {
-            URL url = URI.create("https://t.me/s/IERussia").toURL();
-            URL frontend = new URL("http://localhost:8080");
-            List<String> domains = new CopyOnWriteArrayList<>();
-            domains.add("https://t.me");
-            domains.add("https://telegram.org");
-            domains.add("https://core.telegram.org");
-            HTMLParser parser = new HTMLParser(url, new InetSocketAddress("localhost", 3128));
-            Document d = parser.parse();
-            parser.mapResources(frontend, domains)
-                    .forEach(m -> {
-                        System.out.println(m);
-                    });
-            System.out.println(d);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }*/
 }
