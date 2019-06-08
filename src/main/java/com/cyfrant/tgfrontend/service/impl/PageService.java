@@ -113,6 +113,24 @@ public class PageService {
         if (link.startsWith(base)) {
             link = link.replace(base, frontendBase.toString());
         }
+
+        String transposed = url.toString().replace("/s/", "/");
+        if (link.contains(transposed)) {
+            String path = null;
+            try {
+                path = new URL(link).getPath();
+                if (path.startsWith("/")) {
+                    path = path.substring(1);
+                }
+                if (path.endsWith("/")) {
+                    path = path.substring(0, path.length() - 1);
+                }
+                String[] pp = path.split("\\/");
+                link = "tg://resolve?domain=" + pp[0] + "&post=" + pp[1];
+            } catch (MalformedURLException e) {
+                log.warn("Unable to parse {}", link, e);
+            }
+        }
         return link;
     }
 
@@ -167,7 +185,6 @@ public class PageService {
             }
 
             if ("link".equalsIgnoreCase(r.tagName()) && "stylesheet".equalsIgnoreCase(r.attr("rel"))) {
-                String defaultContentType = "text/css";
                 String attribute = "href";
                 try {
                     String link = r.attr(attribute);
@@ -206,7 +223,6 @@ public class PageService {
             }
         });
     }
-
 
     private void embedDataURI(Element node, String attribute, String defaultContentType) {
         try {
