@@ -1,0 +1,32 @@
+${AnsiColor.BRIGHT_GREEN}88888888888       888
+${AnsiColor.BRIGHT_GREEN}    888           888
+${AnsiColor.BRIGHT_GREEN}    888           888
+${AnsiColor.BRIGHT_GREEN}    888   .d88b.  888  .d88b.   .d88b.  888d888 8888b.  88888b.d88b.
+${AnsiColor.BRIGHT_GREEN}    888  d8P  Y8b 888 d8P  Y8b d88P"88b 888P"      "88b 888 "888 "88b
+${AnsiColor.BRIGHT_GREEN}    888  88888888 888 88888888 888  888 888    .d888888 888  888  888
+${AnsiColor.BRIGHT_GREEN}    888  Y8b.     888 Y8b.     Y88b 888 888    888  888 888  888  888
+${AnsiColor.BRIGHT_GREEN}    888   "Y8888  888  "Y8888   "Y88888 888    "Y888888 888  888  888
+${AnsiColor.BRIGHT_GREEN}                                    888
+${AnsiColor.BRIGHT_GREEN}                               Y8b d88P
+${AnsiColor.BRIGHT_GREEN}                                "Y88P"
+${AnsiColor.BRIGHT_GREEN}            .d8888b.  888                                          888
+${AnsiColor.BRIGHT_GREEN}           d88P  Y88b 888                                          888
+${AnsiColor.BRIGHT_GREEN}           888    888 888                                          888
+${AnsiColor.BRIGHT_GREEN}           888        88888b.   8888b.  88888b.  88888b.   .d88b.  888 .d8888b
+${AnsiColor.BRIGHT_GREEN}           888        888 "88b     "88b 888 "88b 888 "88b d8P  Y8b 888 88K
+${AnsiColor.BRIGHT_GREEN}           888    888 888  888 .d888888 888  888 888  888 88888888 888 "Y8888b.
+${AnsiColor.BRIGHT_GREEN}           Y88b  d88P 888  888 888  888 888  888 888  888 Y8b.     888      X88
+${AnsiColor.BRIGHT_GREEN}            "Y8888P"  888  888 "Y888888 888  888 888  888  "Y8888  888  88888P'
+
+${AnsiColor.BRIGHT_GREEN}                     8888888888                       888                          888
+${AnsiColor.BRIGHT_GREEN}                     888                              888                          888
+${AnsiColor.BRIGHT_GREEN}                     888                              888                          888
+${AnsiColor.BRIGHT_GREEN}                     8888888 888d888 .d88b.  88888b.  888888 .d88b.  88888b.   .d88888
+${AnsiColor.BRIGHT_GREEN}                     888     888P"  d88""88b 888 "88b 888   d8P  Y8b 888 "88b d88" 888
+${AnsiColor.BRIGHT_GREEN}                     888     888    888  888 888  888 888   88888888 888  888 888  888
+${AnsiColor.BRIGHT_GREEN}                     888     888    Y88..88P 888  888 Y88b. Y8b.     888  888 Y88b 888
+${AnsiColor.BRIGHT_GREEN}                     888     888     "Y88P"  888  888  "Y888 "Y8888  888  888  "Y88888
+${AnsiColor.BRIGHT_GREEN}
+${AnsiColor.BRIGHT_GREEN}****************************************************************************************
+${AnsiColor.BRIGHT_GREEN}Application         : ${application.title} v.${application.version}
+${AnsiColor.BRIGHT_GREEN}Spring Boot         : ${spring-boot.version}

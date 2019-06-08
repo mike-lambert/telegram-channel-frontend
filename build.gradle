@@ -22,6 +22,12 @@ repositories {
 
 bootJar {
 	archiveName = "$baseName.$extension"
+	manifest {
+		attributes(
+                'Implementation-Version': project.version,
+                'Implementation-Title': project.name
+        )
+	}
 }
 
 dependencies {
