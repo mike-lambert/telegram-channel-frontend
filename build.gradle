@@ -22,10 +22,17 @@ repositories {
 
 bootJar {
 	archiveName = "$baseName.$extension"
+	manifest {
+		attributes(
+                'Implementation-Version': project.version,
+                'Implementation-Title': project.name
+        )
+	}
 }
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-freemarker'
 	implementation 'org.jsoup:jsoup:1.12.1'
 	implementation 'com.helger:ph-css:6.1.2'
 	compileOnly 'org.projectlombok:lombok'
