@@ -61,7 +61,7 @@ public class WebPageProxy implements PageProxyService {
         try {
             html = decodeJSON(html);
             Document document = Jsoup.parse(html);
-            PageService parser = new PageService(url, dataUriService, proxyAddress);
+            PageService parser = new PageService(index, dataUriService, proxyAddress);
             parser.bundle(document, new URL(frontendURL));
             html = document.body().html();
             html = encodeJSON(html);
