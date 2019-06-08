@@ -14,6 +14,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 @Controller
@@ -34,6 +35,13 @@ public class EntrypointController {
     public void post(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String path = request.getRequestURI() + (StringUtils.isEmpty(request.getQueryString()) ? "" : "?" + request.getQueryString());
         log.info("POST -> {}", path);
+        if (path.equals("/v/")) {
+            StreamUtils.copy(
+                    new ByteArrayInputStream("true".getBytes("UTF-8")),
+                    response.getOutputStream()
+            );
+            return;
+        }
         StreamUtils.copy(proxyService.post(request), response.getOutputStream());
     }
 
