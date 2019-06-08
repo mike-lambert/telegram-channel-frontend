@@ -127,8 +127,8 @@ public class PageService {
                 }
                 String[] pp = path.split("\\/");
                 link = "tg://resolve?domain=" + pp[0] + "&post=" + pp[1];
-            } catch (MalformedURLException e) {
-                log.warn("Unable to parse {}", link, e);
+            } catch (Exception e) {
+                //log.warn("Unable to parse {}", link, e);
             }
         }
         return link;
