@@ -114,13 +114,16 @@ public class PageService {
             link = link.replace(base, frontendBase.toString());
         }
 
-        link = makeSelfChannelDeeplink(link);
         link = makeTelegramDeeplink(link);
+        link = makeSelfChannelDeeplink(link);
         return link;
     }
 
     private String makeTelegramDeeplink(String link) {
         String transposed = "https://t.me/";
+        if (link.startsWith("t.me/")) {
+            link = "https://" + link;
+        }
         if (link.contains(transposed) && link.length() > transposed.length()) {
             String path = null;
             try {
@@ -131,7 +134,12 @@ public class PageService {
                 if (path.endsWith("/")) {
                     path = path.substring(0, path.length() - 1);
                 }
-                link = "tg://resolve?domain=" + path;
+                if (path.contains("/")) {
+                    String[] pp = path.split("\\/");
+                    link = "tg://resolve?domain=" + pp[0] + "&post=" + pp[1];
+                } else {
+                    link = "tg://resolve?domain=" + path;
+                }
             } catch (Exception e) {
                 log.warn("Unable to parse {}", link, e);
             }
