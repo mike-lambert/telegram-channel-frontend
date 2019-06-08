@@ -52,27 +52,4 @@ public class MappedURLTest {
         MappedURL m = MappedURL.map(frontend, new URL(target));
         assertEquals(expected, m.getTargetAddress());
     }
-
-    @Test
-    public void mapDeeplinks() throws Exception {
-        String target = "https://t.me/s/IERussia";
-        String post = "https://t.me/IERussia/2616/";
-        String expected = "tg://resolve?domain=IERussia&post=2616";
-        String result = null;
-
-        String transposed = target.replace("/s/", "/");
-        if (post.contains(transposed)) {
-            String path = new URL(post).getPath();
-            if (path.startsWith("/")) {
-                path = path.substring(1);
-            }
-            if (path.endsWith("/")) {
-                path = path.substring(0, path.length() - 1);
-            }
-            String[] pp = path.split("\\/");
-            result = "tg://resolve?domain=" + pp[0] + "&post=" + pp[1];
-        }
-
-        assertEquals(expected, result);
-    }
 }

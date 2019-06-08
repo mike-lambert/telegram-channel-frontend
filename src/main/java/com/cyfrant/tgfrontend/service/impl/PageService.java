@@ -114,6 +114,32 @@ public class PageService {
             link = link.replace(base, frontendBase.toString());
         }
 
+        link = makeSelfChannelDeeplink(link);
+        link = makeTelegramDeeplink(link);
+        return link;
+    }
+
+    private String makeTelegramDeeplink(String link) {
+        String transposed = "https://t.me/";
+        if (link.contains(transposed) && link.length() > transposed.length()) {
+            String path = null;
+            try {
+                path = new URL(link).getPath();
+                if (path.startsWith("/")) {
+                    path = path.substring(1);
+                }
+                if (path.endsWith("/")) {
+                    path = path.substring(0, path.length() - 1);
+                }
+                link = "tg://resolve?domain=" + path;
+            } catch (Exception e) {
+                log.warn("Unable to parse {}", link, e);
+            }
+        }
+        return link;
+    }
+
+    private String makeSelfChannelDeeplink(String link) {
         String transposed = url.toString().replace("/s/", "/");
         if (link.contains(transposed)) {
             String path = null;
